@@ -4,7 +4,7 @@ import os
 
 
 
-SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 def create_token(user_id: str):
     payload = {
