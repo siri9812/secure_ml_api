@@ -1,30 +1,43 @@
-# # 🔐 Secure ML API
+# 🔐 Secure ML API
 
-A production-ready **Machine Learning Inference API** built with FastAPI, designed with multiple layers of security to protect models from abuse, adversarial inputs, and unauthorized access.
+A production-ready **Machine Learning Inference API** built with FastAPI, designed with multiple layers of security including authentication, rate limiting, input validation, and adversarial attack detection.
 
 ---
 
-## 🚀 Overview
+## 🚀 Live Demo
 
-This project demonstrates how to deploy a **secure ML model API** with authentication, validation, and attack detection mechanisms. It is designed as a real-world ready backend service for ML inference.
+🌐 **API Base URL**
+https://secure-ml-api.onrender.com
+
+📘 **Interactive Docs (Swagger UI)**
+https://secure-ml-api.onrender.com/docs
+
+> ⚠️ Note: This app is hosted on a free tier. The first request may take ~30–50 seconds due to cold start.
 
 ---
 
 ## ⚙️ Features
 
-* 🔑 JWT-based Authentication
+* 🔑 JWT Authentication (Token-based access)
 * 🚦 Rate Limiting (prevents abuse)
 * 🧼 Input Validation & Sanitization
 * 🚨 Adversarial Input Detection
-* ⚠️ Confidence-based Prediction Handling
-* 📡 REST API using FastAPI
+* ⚠️ Confidence-based Prediction Filtering
+* 📡 RESTful API with FastAPI
+* ☁️ Cloud Deployment on Render
 
 ---
 
 ## 🧱 Architecture
 
-Client → Authentication → Rate Limiting → Validation → Sanitization →
-Anomaly Detection → ML Model → Response
+Client
+→ Authentication (JWT)
+→ Rate Limiting
+→ Input Validation
+→ Sanitization
+→ Anomaly Detection
+→ ML Model Inference
+→ Response
 
 ---
 
@@ -34,9 +47,21 @@ Anomaly Detection → ML Model → Response
 
 Health check endpoint
 
+---
+
 ### 🔹 `POST /login`
 
-Generates authentication token
+Generate authentication token
+
+**Response:**
+
+```json
+{
+  "token": "your_jwt_token"
+}
+```
+
+---
 
 ### 🔹 `POST /predict`
 
@@ -52,7 +77,7 @@ Authorization: Bearer <token>
 
 ```json
 {
-  "features": [0.5, 1.2, -0.3, 0.8]
+  "features": [1.0, 2.0, 3.0, 4.0]
 }
 ```
 
@@ -60,27 +85,36 @@ Authorization: Bearer <token>
 
 ## 🧪 Example Usage
 
+### 1️⃣ Get Token
+
 ```bash
-curl -X POST http://127.0.0.1:8000/predict \
+curl -X POST https://secure-ml-api.onrender.com/login
+```
+
+---
+
+### 2️⃣ Make Prediction
+
+```bash
+curl -X POST https://secure-ml-api.onrender.com/predict \
 -H "Authorization: Bearer <token>" \
 -H "Content-Type: application/json" \
--d '{"features": [0.5, 1.2, -0.3, 0.8]}'
+-d '{"features": [1, 2, 3, 4]}'
 ```
 
 ---
 
 ## 🛡️ Security Design
 
-This API implements multiple layers of security:
+This API is built with a layered security approach:
 
-* Token-based authentication
-* Rate limiting
-* Input validation
-* Feature sanitization
+* JWT-based authentication
+* Rate limiting per client IP
+* Input validation and sanitization
 * Adversarial input detection
-* Confidence threshold checks
+* Confidence threshold filtering
 
-> ⚠️ Sensitive configurations such as secret keys are managed using environment variables and are not stored in the repository.
+> 🔐 Sensitive data such as `SECRET_KEY` is managed via environment variables and is not stored in the repository.
 
 ---
 
@@ -89,6 +123,7 @@ This API implements multiple layers of security:
 * Python
 * FastAPI
 * Uvicorn
+* Scikit-learn (for ML model)
 
 ---
 
@@ -96,9 +131,14 @@ This API implements multiple layers of security:
 
 ```
 secure_ml_api/
-├── app/               # Core API logic
-├── scripts/           # Training / utility scripts
-├── test_api.py        # API testing script
+├── app/
+│   ├── core/        # Security, rate limiting
+│   ├── services/    # Inference logic
+│   ├── security/    # Anomaly detection
+│   ├── utils/       # Validation & sanitization
+│   └── main.py      # FastAPI entry point
+├── scripts/         # Model training
+├── test_api.py      # API testing script
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -106,51 +146,41 @@ secure_ml_api/
 
 ---
 
-## ⚙️ Setup Instructions
+## ⚙️ Local Setup
 
-### 1. Clone repository
-
-```
-git clone https://github.com/your-username/secure_ml_api.git
+```bash
+git clone https://github.com/siri9812/secure_ml_api.git
 cd secure_ml_api
-```
 
-### 2. Create virtual environment
-
-```
 python -m venv venv
 venv\Scripts\activate
-```
 
-### 3. Install dependencies
-
-```
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
+---
+
+### 🔐 Environment Variables
 
 Create a `.env` file:
 
 ```
-SECRET_KEY=your_secret_key
+SECRET_KEY=your_secure_random_key
 ```
 
-> ⚠️ Do not commit `.env` to version control
+> ⚠️ Do not commit `.env` to GitHub
 
 ---
 
-### 5. Run the API
+### ▶️ Run Locally
 
-```
+```bash
 uvicorn app.main:app --reload
 ```
 
 ---
 
-## ☁️ Deployment
-
-This project can be deployed on cloud platforms like Render using:
+## ☁️ Deployment (Render)
 
 * **Build Command:**
   `pip install -r requirements.txt`
@@ -158,25 +188,29 @@ This project can be deployed on cloud platforms like Render using:
 * **Start Command:**
   `uvicorn app.main:app --host 0.0.0.0 --port 10000`
 
+* **Environment Variables:**
+  `SECRET_KEY` configured in Render dashboard
+
 ---
 
 ## 💼 Resume Highlight
 
-Built and deployed a secure ML inference API with authentication, rate limiting, input validation, and adversarial detection using FastAPI.
+Developed and deployed a secure ML inference API with JWT authentication, rate limiting, input validation, and adversarial detection using FastAPI and Render.
 
 ---
 
 ## 📌 Future Improvements
 
-* Distributed rate limiting (Redis)
-* Model monitoring and logging
+* Redis-based distributed rate limiting
 * Docker containerization
-* CI/CD integration
+* CI/CD pipeline integration
+* Model monitoring & logging
 
 ---
 
 ## 👤 Author
 
-Your Name
+Shirisha Cheruku
 
-Shirisha
+---
+

@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.core.security import create_token, verify_token
 from app.core.rate_limit import is_allowed
@@ -6,7 +7,10 @@ from app.services.inference import predict_with_confidence
 from app.utils.security import validate_features, sanitize_features
 from app.security.anomaly import is_anomalous
 
+
 app = FastAPI(title="Secure ML API")
+
+security = HTTPBearer()   
 
 
 @app.get("/")
@@ -24,7 +28,7 @@ def login():
 def get_prediction(
     data: dict,
     request: Request,
-    authorization: str = Header(None)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
 
     client_ip = request.client.host
@@ -32,15 +36,9 @@ def get_prediction(
     # 1. Rate limiting
     if not is_allowed(client_ip):
         raise HTTPException(status_code=429, detail="Too many requests")
-
-    # 2. Auth check
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing token")
-
-    try:
-        token = authorization.split(" ")[1]
-    except:
-        raise HTTPException(status_code=401, detail="Invalid token format")
+    
+    # 2. Auth check (FIXED)
+    token = credentials.credentials
 
     if not verify_token(token):
         raise HTTPException(status_code=403, detail="Invalid or expired token")
@@ -52,7 +50,11 @@ def get_prediction(
     if not validate_features(features):
         raise HTTPException(status_code=400, detail="Invalid input format")
 
-    # 5. Sanitization (UPGRADE 4)
+    # 5. Sanitization (UPGRADE 4) 2. Auth check (FIXED)
+    token = credentials.credentials
+
+    if not verify_token(token):
+        raise HTTPException(status_code=403, detail="Invalid or expired token")
     features = sanitize_features(features)
 
     # 6. Adversarial detection
@@ -78,10 +80,10 @@ def get_prediction(
         "confidence": confidence
     }
 
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+#just in case required local
+#if __name__ == "__main__":
+ #   import uvicorn
+  #  uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
 
     
 
